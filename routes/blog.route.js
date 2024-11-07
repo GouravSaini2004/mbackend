@@ -30,6 +30,7 @@ const upload = multer({ storage: storage });
 
 router.post('/addblog', upload.single("file"), async (req, res) => {
   const { title, body, id } = req.body;
+  
   try {
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'uploads', // Optional folder in your Cloudinary storage
@@ -194,6 +195,7 @@ try {
 
 router.get('/like/:id', async(req, res)=>{
   const postid = req.params.id;
+  // console.log("hit this 2")
   try {
     const likeCount = await Like.countDocuments({ blogid: postid })
     res.json({ count: likeCount }); 

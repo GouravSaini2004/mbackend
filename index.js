@@ -33,15 +33,15 @@ app.use(cors());
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
-app.set('view engine', "ejs");
-app.set("views", path.resolve("./views"));
+// app.set('view engine', "ejs");
+// app.set("views", path.resolve("./views"));
 
 app.use(cookieParser());
 app.use(express.static(path.resolve('./public')));
-
 app.get('/', async(req, res)=>{
-    const allblog = await Blog.find({});
-    res.json(allblog) 
+    const allblog = await Blog.find({}).populate("createdby");
+    res.json(allblog);
+
 })
 app.use('/user', userRoute);
 app.use('/blog', blogRoute);

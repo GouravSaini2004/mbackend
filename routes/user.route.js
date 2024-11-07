@@ -3,15 +3,14 @@ const router = express.Router();
 const User = require("../models/user.model");
 const History = require("../models/history.model")
 const checklogin = require("../middleware/authlogin");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-router.get('/signin', (req, res) => {
-    return res.render('signin');
-});
+const genAI = new GoogleGenerativeAI("AIzaSyBNJTIaY7uIf3QIt3YZvYVTAWIPCUBIT8M");
 
 router.post('/signin', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const token = await User.matchpassword(email, password);
+        const token = await User.matchpassword(email , password);
         const user = checklogin(token);
         if (user) {
             res.status(200).json({ user , value: true,})
@@ -31,13 +30,14 @@ router.post('/signin', async (req, res) => {
 
 router.post('/signup', (req, res) => {
     const { fullname, email, password } = req.body;
+    // console.log(req.body);
     const user = new User({
         fullname,
-        email,
+        email: email.toLowerCase(),
         password,
     });
     user.save().then(() => {
-        res.json({ msg: "success:" })
+        res.status(200).json({ msg: "success:" })
     }).catch((err) => {
         res.status(500)
     })
@@ -111,5 +111,25 @@ router.get('/history/:id', async (req, res) => {
         res.status(500).json({ msg: "Server error" }); // Adjust error handling as per your application's needs
     }
 
+})
+
+router.post('/ai', async(req, res)=>{
+    const data = req.body.data;
+    // console.log(data);
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = data;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        // Send the generated text wrapped in <p> tags as HTML response
+        res.json({text: text});
+    } catch (error) {
+        console.error('Error generating content:', error);
+        res.status(500).send('Error generating content');
+    }
 })
 module.exports = router;
